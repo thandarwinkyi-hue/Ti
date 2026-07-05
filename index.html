@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>မြန်မာပညာဒေတာဘေ့စ် (Offline Search)</title>
+    <style>
+        body {
+            font-family: 'Pyidaungsu', 'Segoe UI', sans-serif;
+            background-color: #f7f9fa;
+            margin: 0;
+            padding: 15px;
+            color: #333;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h2 { text-align: center; color: #800000; margin-bottom: 15px; font-size: 24px; }
+        
+        /* Book Selector Style */
+        .book-selector-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #bookSelector {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #800000;
+            border-radius: 8px;
+            background-color: #fff8f8;
+            color: #800000;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+        }
+        #bookSelector:focus { box-shadow: 0 0 5px rgba(128,0,0,0.3); }
+
+        .loading-box {
+            text-align: center;
+            padding: 40px;
+            font-size: 16px;
+            color: #800000;
+            font-style: italic;
+            line-height: 1.8;
+        }
+        .progress-text {
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 18px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .retry-btn {
+            background-color: #d93838;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .main-app { display: none; }
+        .search-container { margin-bottom: 15px; display: flex; gap: 8px; }
+        #searchBox {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        #searchBox:focus { border-color: #800000; }
+        
+        .update-btn {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .update-btn:hover { background-color: #800000; }
+
+        .alphabet-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            justify-content: center;
+            background: #fff8f8;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0d0d0;
+        }
+        .abc-btn {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            font-size: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 38px;
+            transition: all 0.2s;
+        }
+        .abc-btn:hover { background-color: #f5f5f5; }
+        .abc-btn.active { background-color: #800000; color: white; border-color: #800000; }
+        
+        .item-card {
+            background: #fff;
+            border-left: 5px solid #800000;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .item-title { font-weight: bold; font-size: 22px; color: #800000; margin-bottom: 8px; }
+        .item-content { font-weight: bold; font-size: 18px; line-height: 1.9; color: #555; white-space: pre-line; }
+        .no-result { text-align: center; color: #999; font-style: italic; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>မြန်မာပညာ ရှာဖွေရေးစနစ်</h2>
+
+    <div class="book-selector-container">
+        <select id="bookSelector" onchange="changeBook()">
+            <option value="vutthu">၁။ ပိဋကတ်ဝတ္ထုလမ်းညွှန် (၃ အုပ်)</option>
+            <option value="pitaka">၂။ ပိဋကလမ်းညွှန် (၇ အုပ်)</option>
+            <option value="thutethana">၃။ သုတေသနသရုပ်ပြအဘိဓာန် (၂ အုပ်)</option>
+        </select>
+    </div>
+
+    <div id="loadingStatus" class="loading-box" style="display: none;">
+        ဝီကီဆို့စ်မှ <span id="loadingBookName" style="font-weight:bold;"></span> ကို ဆွဲယူနေပါသည်...<br>
+        <span id="progressIndicator" class="progress-text">စနစ်ကို စတင်ပြင်ဆင်နေသည်...</span><br>
+        <span style="font-size: 13px; color: #777; display:block; margin-top:5px;">(ဒေတာပမာဏ ကြီးမားသဖြင့် ပထမဆုံးတစ်ကြိမ်သာ အချိန်အနည်းငယ် ကြာပါမည်)</span>
+        <div id="retryArea"></div>
+    </div>
+
+    <div id="mainApp" class="main-app">
+        <div class="search-container">
+            <input type="text" id="searchBox" placeholder="ဒီနေရာမှာ စာရိုက်ပြီး ရှာဖွေပါ..." oninput="searchData()">
+            <button class="update-btn" onclick="forceUpdateData()">စာအသစ်ပြန်ယူရန်</button>
+        </div>
+
+        <div class="alphabet-buttons" id="alphabetButtonsArea">
+            <button class="abc-btn active" onclick="filterAlphabet('အားလုံး', this)">အားလုံး</button>
+        </div>
+
+        <div id="result-container"></div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 1. Data Configuration (စာအုပ် ၃ မျိုး ဖွဲ့စည်းပုံ)
+    // ==========================================
+    const booksConfig = {
+        "vutthu": {
+            title: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်",
+            pages: ["ပိဋကတ်ဝတ္ထုလမ်းညွှန်", "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-ဒု", "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-တ"],
+            vols: ["ပထမတွဲ (၁)", "ဒုတိယတွဲ (၂)", "တတိယတွဲ (၃)"]
+        },
+        "pitaka": {
+            title: "ပိဋကလမ်းညွှန်",
+            pages: [
+                "ပိဋကလမ်းညွှန်-ကခဂဃင", "ပိဋကလမ်းညွှန်-စဆဇဈည", "ပိဋကလမ်းညွှန်-ဋဌဍဎဏတထဒဓန", 
+                "ပိဋကလမ်းညွှန်-ပဖဗဘမ", "ပိဋကလမ်းညွှန်-ယရလဝ", "ပိဋကလမ်းညွှန်-သဟဠ", "ပိဋကလမ်းညွှန်-အ"
+            ],
+            vols: ["(က - င)", "(စ - ည)", "(ဋ - န)", "(ပ - မ)", "(ယ - ဝ)", "(သ - ဠ)", "(အ)"]
+        },
+        "thutethana": {
+            title: "သုတေသနသရုပ်ပြအဘိဓာန်",
+            pages: ["သုတေသနသရုပ်ပြအဘိဓာန်", "သုတေသနသရုပ်ပြအဘိဓာန်-ဒု"],
+            vols: ["ပထမတွဲ", "ဒုတိယတွဲ"]
+        }
+    };
+
+    let currentBookKey = "vutthu"; // မူလပထမ ဖွင့်မည့်စာအုပ်
+    let currentData = []; 
+    let currentAlphabet = "အားလုံး";
+
+    const myanmarAlphabets = [
+        "က", "ခ", "ဂ", "ဃ", "င", "စ", "ဆ", "ဇ", "ဈ", "ည", 
+        "ဋ", "ဌ", "ဍ", "ဎ", "ဏ", "တ", "ထ", "ဒ", "ဓ", "န", 
+        "ပ", "ဖ", "ဗ", "ဘ", "မ", "ယ", "ရ", "လ", "ဝ", "သ", "ဟ", "ဠ", "အ"
+    ];
+
+    // ==========================================
+    // 2. IndexedDB (မှတ်ဉာဏ် Database)
+    // ==========================================
+    const DB_NAME = "MyanmarLibraryDB";
+    const STORE_NAME = "library_volumes";
+
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            let request = indexedDB.open(DB_NAME, 1);
+            request.onupgradeneeded = function(e) {
+                let db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                }
+            };
+            request.onsuccess = function(e) { resolve(e.target.result); };
+            request.onerror = function(e) { reject(e.target.error); };
+        });
+    }
+
+    async function saveToDB(key, data) {
+        let db = await initDB();
+        return new Promise((resolve, reject) => {
+            let tx = db.transaction(STORE_NAME, "readwrite");
+            let store = tx.objectStore(STORE_NAME);
+            let request = store.put(data, key);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async function getFromDB(key) {
+        let db = await initDB();
+        return new Promise((resolve, reject) => {
+            let tx = db.transaction(STORE_NAME, "readonly");
+            let store = tx.objectStore(STORE_NAME);
+            let request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async function deleteFromDB(key) {
+        let db = await initDB();
+        return new Promise((resolve, reject) => {
+            let tx = db.transaction(STORE_NAME, "readwrite");
+            let store = tx.objectStore(STORE_NAME);
+            let request = store.delete(key);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    // ==========================================
+    // 3. Application Logic
+    // ==========================================
+    window.onload = function() {
+        const btnArea = document.getElementById("alphabetButtonsArea");
+        myanmarAlphabets.forEach(char => {
+            const btn = document.createElement("button");
+            btn.className = "abc-btn";
+            btn.textContent = char;
+            btn.onclick = function() { filterAlphabet(char, this); };
+            btnArea.appendChild(btn);
+        });
+        
+        loadSelectedBook();
+    };
+
+    function changeBook() {
+        currentBookKey = document.getElementById("bookSelector").value;
+        document.getElementById("searchBox").value = ""; 
+        filterAlphabet('အားလုံး', document.querySelector('.abc-btn')); // Reset filter
+        loadSelectedBook();
+    }
+
+    async function loadSelectedBook() {
+        currentData = [];
+        let bookInfo = booksConfig[currentBookKey];
+        let missingVolumeFound = false;
+
+        document.getElementById("loadingBookName").textContent = bookInfo.title;
+
+        // DB ထဲမှာ ရွေးလိုက်တဲ့စာအုပ်ရဲ့ အတွဲတွေ အကုန်ရှိမရှိ စစ်မယ်
+        for (let i = 0; i < bookInfo.pages.length; i++) {
+            let savedVol = await getFromDB(`${currentBookKey}_vol_${i}`);
+            if (savedVol) {
+                currentData = currentData.concat(savedVol);
+            } else {
+                missingVolumeFound = true;
+            }
+        }
+
+        if (!missingVolumeFound && currentData.length > 0) {
+            startApp();
+        } else {
+            fetchMissingVolumes(bookInfo);
+        }
+    }
+
+    async function fetchMissingVolumes(bookInfo) {
+        document.getElementById("loadingStatus").style.display = "block";
+        document.getElementById("mainApp").style.display = "none";
+        document.getElementById("retryArea").innerHTML = ""; 
+        
+        const progressEl = document.getElementById("progressIndicator");
+
+        for (let i = 0; i < bookInfo.pages.length; i++) {
+            let isSaved = await getFromDB(`${currentBookKey}_vol_${i}`);
+            if (isSaved) continue; // ဆွဲပြီးသားရှိရင် ကျော်မယ်
+
+            progressEl.textContent = `⏳ အတွဲ ${bookInfo.vols[i]} ကို ဒေါင်းလုဒ်ဆွဲနေပါသည်...`;
+            
+            try {
+                const apiUrl = `https://my.wikisource.org/w/api.php?action=parse&page=${encodeURIComponent(bookInfo.pages[i])}&format=json&origin=*`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Network error");
+                
+                const data = await response.json();
+                
+                if (data && data.parse && data.parse.text) {
+                    let extractedData = parseVolumeData(data.parse.text["*"], bookInfo.title);
+                    
+                    if (extractedData.length > 0) {
+                        await saveToDB(`${currentBookKey}_vol_${i}`, extractedData);
+                    }
+                }
+            } catch (error) {
+                console.error("Error at volume " + i, error);
+                progressEl.innerHTML = `<span style='color:red;'>❌ ${bookInfo.vols[i]} ဆွဲယူရာတွင် အခက်အခဲရှိနေပါသည်။</span>`;
+                document.getElementById("retryArea").innerHTML = `<button class="retry-btn" onclick="loadSelectedBook()">ထပ်မံကြိုးစားရန်</button>`;
+                return; 
+            }
+        }
+        loadSelectedBook(); // အကုန်ဆွဲပြီးရင် ပြန်စစ်ပြီး ဖွင့်မယ်
+    }
+
+    function parseVolumeData(htmlContent, bookTitle) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const headings = doc.querySelectorAll('h2, h3, h4');
+        let parsedList = [];
+
+        headings.forEach(heading => {
+            const title = heading.textContent.trim();
+            // မလိုအပ်သော ခေါင်းစဉ်ကြီးများ ဖယ်ထုတ်ခြင်း
+            if (!title || title.includes("ဆရာတော်") || title.includes("စာမျက်နှာ") || title.includes("ကဏ္ဍ") || title.includes(bookTitle)) return;
+
+            let currentEl = heading;
+            if (heading.parentElement && heading.parentElement.classList.contains('mw-heading')) {
+                currentEl = heading.parentElement;
+            }
+
+            let content = "";
+            let nextEl = currentEl.nextElementSibling;
+            
+            while (nextEl) {
+                if (nextEl.matches('h1, h2, h3, h4, h5, h6') || nextEl.classList.contains('mw-heading') || nextEl.querySelector('h1, h2, h3, h4, h5, h6')) {
+                    break;
+                }
+                content += nextEl.textContent.trim() + "\n";
+                nextEl = nextEl.nextElementSibling;
+            }
+
+            // က၊ ခ၊ ဂ နဲ့ စတဲ့ စကားလုံးတွေကို သတ်မှတ်ပေးခြင်း
+            let firstChar = title.replace(/[^က-အ]/g, '').charAt(0) || "အ"; 
+
+            parsedList.push({
+                "alphabet": firstChar,
+                "title": title,
+                "content": content.trim()
+            });
+        });
+        return parsedList;
+    }
+
+    function startApp() {
+        document.getElementById("loadingStatus").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        displayData(currentData);
+    }
+
+    function displayData(dataList) {
+        const container = document.getElementById("result-container");
+        container.innerHTML = ""; 
+
+        if (dataList.length === 0) {
+            container.innerHTML = "<div class='no-result'>ရှာဖွေမှုရလဒ် မရှိပါ။</div>";
+            return;
+        }
+
+        dataList.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "item-card";
+            card.innerHTML = `<div class="item-title">${item.title}</div><div class="item-content">${item.content}</div>`;
+            container.appendChild(card);
+        });
+    }
+
+    function filterAlphabet(letter, buttonElement) {
+        currentAlphabet = letter;
+        document.querySelectorAll('.abc-btn').forEach(btn => btn.classList.remove('active'));
+        buttonElement.classList.add('active');
+        searchData();
+    }
+
+    function searchData() {
+        const searchKeyword = document.getElementById("searchBox").value.trim();
+        const filtered = currentData.filter(item => {
+            let matchesAlphabet = (currentAlphabet === "အားလုံး" || item.alphabet === currentAlphabet);
+            let matchesKeyword = false;
+
+            if (searchKeyword === "") matchesKeyword = true;
+            else if (searchKeyword.length === 1 && myanmarAlphabets.includes(searchKeyword)) {
+                matchesKeyword = (item.alphabet === searchKeyword);
+                matchesAlphabet = true; 
+            } else {
+                matchesKeyword = item.title.includes(searchKeyword) || item.content.includes(searchKeyword);
+            }
+            return matchesAlphabet && matchesKeyword;
+        });
+        displayData(filtered);
+    }
+
+    async function forceUpdateData() {
+        let bookInfo = booksConfig[currentBookKey];
+        if(confirm(`"${bookInfo.title}" ရဲ့ အချက်အလက်အသစ်များကို ပြန်ဒေါင်းလုဒ် ဆွဲမလား?`)) {
+            for (let i = 0; i < bookInfo.pages.length; i++) {
+                await deleteFromDB(`${currentBookKey}_vol_${i}`);
+            }
+            loadSelectedBook();
+        }
+    }
+</script>
+
+</body>
+</html>
