@@ -3,136 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>မြန်မာပညာဒေတာဘေ့စ် (Offline Search)</title>
+    <title>မြန်မာပညာဒေတာဘေ့စ် (Eye Care Reader)</title>
     <style>
+        /* မူလအလင်းရောင် (Light Theme) */
+        :root {
+            --bg-color: #f7f9fa;
+            --container-bg: #fff;
+            --text-color: #333;
+            --primary-color: #800000;
+            --secondary-color: #d93838;
+            --border-color: #ddd;
+            --card-text: #555;
+            --btn-bg: #fff;
+            --btn-hover: #f5f5f5;
+            --box-shadow: rgba(0,0,0,0.05);
+            --alpha-bg: #fff8f8;
+        }
+
+        /* မျက်စိအေး ဝါနုရောင် (Sepia Theme) */
+        body.theme-sepia {
+            --bg-color: #f1e7d0;
+            --container-bg: #fbf0d9;
+            --text-color: #433422;
+            --primary-color: #5b3e31;
+            --secondary-color: #8c5b46;
+            --border-color: #dfd1b8;
+            --card-text: #5c4b37;
+            --btn-bg: #fdf6e3;
+            --btn-hover: #eee3c9;
+            --box-shadow: rgba(91, 62, 49, 0.08);
+            --alpha-bg: #fdf6e3;
+        }
+
+        /* မျက်စိအေး စိမ်းနုရောင် (Soft Green Theme) */
+        body.theme-green {
+            --bg-color: #dceee0;
+            --container-bg: #eaf5ec;
+            --text-color: #2d452b;
+            --primary-color: #1b5e20;
+            --secondary-color: #388e3c;
+            --border-color: #c5e1c9;
+            --card-text: #425e40;
+            --btn-bg: #f1f8f2;
+            --btn-hover: #d3ead7;
+            --box-shadow: rgba(27, 94, 32, 0.06);
+            --alpha-bg: #f1f8f2;
+        }
+
+        /* ညဘက်ဖတ်ရန် (Dark Theme) */
+        body.theme-dark {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #ff9e9e;
+            --secondary-color: #ff7575;
+            --border-color: #444;
+            --card-text: #cccccc;
+            --btn-bg: #2c2c2c;
+            --btn-hover: #3d3d3d;
+            --box-shadow: rgba(0,0,0,0.3);
+            --alpha-bg: #2c2c2c;
+        }
+
         body {
             font-family: 'Pyidaungsu', 'Segoe UI', sans-serif;
-            background-color: #f7f9fa;
+            background-color: var(--bg-color);
             margin: 0;
             padding: 15px;
-            color: #333;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             max-width: 750px;
             margin: 0 auto;
-            background: #fff;
+            background: var(--container-bg);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px var(--box-shadow);
+            transition: background-color 0.3s;
         }
-        h2 { text-align: center; color: #800000; margin-bottom: 15px; font-size: 24px; }
+        h2 { text-align: center; color: var(--primary-color); margin-bottom: 15px; font-size: 24px; }
         
-        /* Book Selector Style */
-        .book-selector-container {
-            margin-bottom: 20px;
-            text-align: center;
-        }
+        .book-selector-container { text-align: center; margin-bottom: 15px; }
         #bookSelector {
-            width: 100%;
-            max-width: 400px;
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #800000;
-            border-radius: 8px;
-            background-color: #fff8f8;
-            color: #800000;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
+            width: 100%; max-width: 400px; padding: 10px; font-size: 16px;
+            border: 2px solid var(--primary-color); border-radius: 8px;
+            background-color: var(--alpha-bg); color: var(--primary-color);
+            font-weight: bold; outline: none; cursor: pointer;
         }
-        #bookSelector:focus { box-shadow: 0 0 5px rgba(128,0,0,0.3); }
 
-        .loading-box {
-            text-align: center;
-            padding: 40px;
-            font-size: 16px;
-            color: #800000;
-            font-style: italic;
-            line-height: 1.8;
+        /* Settings Bar (Font Size & Themes) */
+        .settings-bar {
+            display: flex; justify-content: center; align-items: center;
+            gap: 15px; margin-bottom: 20px; padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color); flex-wrap: wrap;
         }
-        .progress-text {
-            font-weight: bold;
-            color: #2e7d32;
-            font-size: 18px;
-            margin-top: 10px;
-            display: inline-block;
+        .setting-btn {
+            background-color: var(--btn-bg); color: var(--text-color);
+            border: 1px solid var(--border-color); padding: 6px 15px;
+            border-radius: 8px; cursor: pointer; font-weight: bold;
+            font-size: 15px; transition: 0.2s;
         }
-        .retry-btn {
-            background-color: #d93838;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
+        .setting-btn:hover { background-color: var(--btn-hover); }
+
+        /* Theme Picker Circles */
+        .theme-picker { display: flex; gap: 10px; align-items: center; border-left: 2px solid var(--border-color); padding-left: 15px; }
+        .theme-circle {
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+            border: 2px solid #bbb; transition: transform 0.2s, border-color 0.2s;
         }
+        .theme-circle:hover { transform: scale(1.1); }
+        .theme-circle.active { border: 2px solid var(--primary-color); transform: scale(1.1); }
+        
+        .bg-white { background-color: #f7f9fa; }
+        .bg-sepia { background-color: #f1e7d0; }
+        .bg-green { background-color: #dceee0; }
+        .bg-dark { background-color: #1e1e1e; }
+
+        .loading-box { text-align: center; padding: 40px; font-size: 16px; color: var(--primary-color); font-style: italic; line-height: 1.8; }
+        .progress-text { font-weight: bold; color: #2e7d32; font-size: 18px; margin-top: 10px; display: inline-block; }
+        body.theme-dark .progress-text { color: #66bb6a; }
+        .retry-btn { background-color: var(--secondary-color); color: white; border: none; padding: 8px 15px; margin-top: 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
         .main-app { display: none; }
         .search-container { margin-bottom: 15px; display: flex; gap: 8px; }
         #searchBox {
-            flex: 1;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            outline: none;
+            flex: 1; padding: 12px 15px; font-size: 16px;
+            border: 2px solid var(--border-color); border-radius: 8px; box-sizing: border-box;
+            outline: none; background-color: var(--container-bg); color: var(--text-color);
         }
-        #searchBox:focus { border-color: #800000; }
+        #searchBox:focus { border-color: var(--primary-color); }
         
-        .update-btn {
-            background-color: #666;
-            color: white;
-            border: none;
-            padding: 0 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .update-btn:hover { background-color: #800000; }
+        .update-btn { background-color: #666; color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .update-btn:hover { background-color: var(--primary-color); }
 
         .alphabet-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 20px;
-            justify-content: center;
-            background: #fff8f8;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #f0d0d0;
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;
+            justify-content: center; background: var(--alpha-bg); padding: 10px;
+            border-radius: 8px; border: 1px solid var(--border-color);
         }
         .abc-btn {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            font-size: 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            min-width: 38px;
-            transition: all 0.2s;
+            background-color: var(--btn-bg); color: var(--text-color); border: 1px solid var(--border-color);
+            padding: 6px 12px; font-size: 20px; border-radius: 4px; cursor: pointer; min-width: 38px; transition: all 0.2s;
         }
-        .abc-btn:hover { background-color: #f5f5f5; }
-        .abc-btn.active { background-color: #800000; color: white; border-color: #800000; }
+        .abc-btn:hover { background-color: var(--btn-hover); }
+        .abc-btn.active { background-color: var(--primary-color); color: var(--container-bg); border-color: var(--primary-color); }
         
         .item-card {
-            background: #fff;
-            border-left: 5px solid #800000;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            background: var(--container-bg); border-left: 5px solid var(--primary-color);
+            padding: 15px; margin-bottom: 15px; border-radius: 4px;
+            box-shadow: 0 2px 5px var(--box-shadow);
+            border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
         }
-        .item-title { font-weight: bold; font-size: 22px; color: #800000; margin-bottom: 8px; }
-        .item-content { font-weight: bold; font-size: 18px; line-height: 1.9; color: #555; white-space: pre-line; }
+        .item-title { font-weight: bold; font-size: 24px; color: var(--primary-color); margin-bottom: 8px; }
+        .item-content { font-size: 15px; line-height: 1.8; color: var(--card-text); white-space: pre-line; transition: font-size 0.2s; }
         .no-result { text-align: center; color: #999; font-style: italic; padding: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>မြန်မာပညာ ရှာဖွေရေးစနစ်</h2>
+    <h2>ပိဋကလမ်းညွှန်</h2>
+
+    <div class="settings-bar">
+        <button class="setting-btn" onclick="changeFontSize(-1)">A-</button>
+        <button class="setting-btn" onclick="changeFontSize(1)">A+</button>
+        
+        <div class="theme-picker">
+            <div class="theme-circle bg-white" onclick="setTheme('light')" id="theme-light" title="ပုံမှန်အရောင်"></div>
+            <div class="theme-circle bg-sepia" onclick="setTheme('sepia')" id="theme-sepia" title="မျက်စိအေး ဝါနုရောင်"></div>
+            <div class="theme-circle bg-green" onclick="setTheme('green')" id="theme-green" title="မျက်စိအေး စိမ်းနုရောင်"></div>
+            <div class="theme-circle bg-dark" onclick="setTheme('dark')" id="theme-dark" title="ညဘက်ဖတ်ရန်"></div>
+        </div>
+    </div>
 
     <div class="book-selector-container">
         <select id="bookSelector" onchange="changeBook()">
@@ -165,7 +208,44 @@
 
 <script>
     // ==========================================
-    // 1. Data Configuration (စာအုပ် ၃ မျိုး ဖွဲ့စည်းပုံ)
+    // UI Settings Logic (Font Size & Multiple Themes)
+    // ==========================================
+    let currentFontSize = localStorage.getItem("myanmar_reader_fontsize") ? parseInt(localStorage.getItem("myanmar_reader_fontsize")) : 15;
+    let currentTheme = localStorage.getItem("myanmar_reader_theme") || "light";
+
+    function applyUserSettings() {
+        // Theme Apply
+        document.body.className = ""; // Remove all classes
+        if (currentTheme !== "light") {
+            document.body.classList.add("theme-" + currentTheme);
+        }
+
+        // Active Circle Indicator
+        document.querySelectorAll('.theme-circle').forEach(el => el.classList.remove('active'));
+        const activeCircle = document.getElementById("theme-" + currentTheme);
+        if(activeCircle) activeCircle.classList.add('active');
+
+        // Font Size Apply
+        const contentElements = document.querySelectorAll('.item-content');
+        contentElements.forEach(el => { el.style.fontSize = currentFontSize + "px"; });
+    }
+
+    function setTheme(themeName) {
+        currentTheme = themeName;
+        localStorage.setItem("myanmar_reader_theme", currentTheme);
+        applyUserSettings();
+    }
+
+    function changeFontSize(step) {
+        currentFontSize += step;
+        if (currentFontSize < 12) currentFontSize = 12; 
+        if (currentFontSize > 28) currentFontSize = 28; 
+        localStorage.setItem("myanmar_reader_fontsize", currentFontSize);
+        applyUserSettings();
+    }
+
+    // ==========================================
+    // Data Configuration
     // ==========================================
     const booksConfig = {
         "vutthu": {
@@ -188,7 +268,7 @@
         }
     };
 
-    let currentBookKey = "vutthu"; // မူလပထမ ဖွင့်မည့်စာအုပ်
+    let currentBookKey = "vutthu"; 
     let currentData = []; 
     let currentAlphabet = "အားလုံး";
 
@@ -199,7 +279,7 @@
     ];
 
     // ==========================================
-    // 2. IndexedDB (မှတ်ဉာဏ် Database)
+    // IndexedDB Database
     // ==========================================
     const DB_NAME = "MyanmarLibraryDB";
     const STORE_NAME = "library_volumes";
@@ -209,9 +289,7 @@
             let request = indexedDB.open(DB_NAME, 1);
             request.onupgradeneeded = function(e) {
                 let db = e.target.result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME);
-                }
+                if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
             };
             request.onsuccess = function(e) { resolve(e.target.result); };
             request.onerror = function(e) { reject(e.target.error); };
@@ -252,9 +330,11 @@
     }
 
     // ==========================================
-    // 3. Application Logic
+    // Application Logic
     // ==========================================
     window.onload = function() {
+        applyUserSettings(); 
+
         const btnArea = document.getElementById("alphabetButtonsArea");
         myanmarAlphabets.forEach(char => {
             const btn = document.createElement("button");
@@ -270,7 +350,7 @@
     function changeBook() {
         currentBookKey = document.getElementById("bookSelector").value;
         document.getElementById("searchBox").value = ""; 
-        filterAlphabet('အားလုံး', document.querySelector('.abc-btn')); // Reset filter
+        filterAlphabet('အားလုံး', document.querySelector('.abc-btn')); 
         loadSelectedBook();
     }
 
@@ -281,7 +361,6 @@
 
         document.getElementById("loadingBookName").textContent = bookInfo.title;
 
-        // DB ထဲမှာ ရွေးလိုက်တဲ့စာအုပ်ရဲ့ အတွဲတွေ အကုန်ရှိမရှိ စစ်မယ်
         for (let i = 0; i < bookInfo.pages.length; i++) {
             let savedVol = await getFromDB(`${currentBookKey}_vol_${i}`);
             if (savedVol) {
@@ -307,7 +386,7 @@
 
         for (let i = 0; i < bookInfo.pages.length; i++) {
             let isSaved = await getFromDB(`${currentBookKey}_vol_${i}`);
-            if (isSaved) continue; // ဆွဲပြီးသားရှိရင် ကျော်မယ်
+            if (isSaved) continue; 
 
             progressEl.textContent = `⏳ အတွဲ ${bookInfo.vols[i]} ကို ဒေါင်းလုဒ်ဆွဲနေပါသည်...`;
             
@@ -320,7 +399,6 @@
                 
                 if (data && data.parse && data.parse.text) {
                     let extractedData = parseVolumeData(data.parse.text["*"], bookInfo.title);
-                    
                     if (extractedData.length > 0) {
                         await saveToDB(`${currentBookKey}_vol_${i}`, extractedData);
                     }
@@ -332,7 +410,7 @@
                 return; 
             }
         }
-        loadSelectedBook(); // အကုန်ဆွဲပြီးရင် ပြန်စစ်ပြီး ဖွင့်မယ်
+        loadSelectedBook(); 
     }
 
     function parseVolumeData(htmlContent, bookTitle) {
@@ -343,7 +421,6 @@
 
         headings.forEach(heading => {
             const title = heading.textContent.trim();
-            // မလိုအပ်သော ခေါင်းစဉ်ကြီးများ ဖယ်ထုတ်ခြင်း
             if (!title || title.includes("ဆရာတော်") || title.includes("စာမျက်နှာ") || title.includes("ကဏ္ဍ") || title.includes(bookTitle)) return;
 
             let currentEl = heading;
@@ -362,7 +439,6 @@
                 nextEl = nextEl.nextElementSibling;
             }
 
-            // က၊ ခ၊ ဂ နဲ့ စတဲ့ စကားလုံးတွေကို သတ်မှတ်ပေးခြင်း
             let firstChar = title.replace(/[^က-အ]/g, '').charAt(0) || "အ"; 
 
             parsedList.push({
@@ -395,6 +471,8 @@
             card.innerHTML = `<div class="item-title">${item.title}</div><div class="item-content">${item.content}</div>`;
             container.appendChild(card);
         });
+        
+        applyUserSettings(); 
     }
 
     function filterAlphabet(letter, buttonElement) {
