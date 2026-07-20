@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>မြန်မာပညာဒေတာဘေ့စ် (Eye Care Reader)</title>
+    <title>မြန်မာပညာဒေတာဘေ့စ် (All-in-One Search)</title>
     <style>
         /* မူလအလင်းရောင် (Light Theme) */
         :root {
@@ -74,7 +74,7 @@
             transition: background-color 0.3s, color 0.3s;
         }
         .container {
-            max-width: 750px;
+            max-width: 800px;
             margin: 0 auto;
             background: var(--container-bg);
             padding: 20px;
@@ -84,14 +84,6 @@
         }
         h2 { text-align: center; color: var(--primary-color); margin-bottom: 15px; font-size: 24px; }
         
-        .book-selector-container { text-align: center; margin-bottom: 15px; }
-        #bookSelector {
-            width: 100%; max-width: 400px; padding: 10px; font-size: 16px;
-            border: 2px solid var(--primary-color); border-radius: 8px;
-            background-color: var(--alpha-bg); color: var(--primary-color);
-            font-weight: bold; outline: none; cursor: pointer;
-        }
-
         /* Settings Bar (Font Size & Themes) */
         .settings-bar {
             display: flex; justify-content: center; align-items: center;
@@ -144,7 +136,7 @@
         }
         .abc-btn {
             background-color: var(--btn-bg); color: var(--text-color); border: 1px solid var(--border-color);
-            padding: 6px 12px; font-size: 20px; border-radius: 4px; cursor: pointer; min-width: 38px; transition: all 0.2s;
+            padding: 6px 12px; font-size: 14px; border-radius: 4px; cursor: pointer; min-width: 38px; transition: all 0.2s;
         }
         .abc-btn:hover { background-color: var(--btn-hover); }
         .abc-btn.active { background-color: var(--primary-color); color: var(--container-bg); border-color: var(--primary-color); }
@@ -155,16 +147,31 @@
             box-shadow: 0 2px 5px var(--box-shadow);
             border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
         }
-        .item-title { font-weight: bold; font-size: 24px; color: var(--primary-color); margin-bottom: 8px; }
+        .item-title { font-weight: bold; font-size: 18px; color: var(--primary-color); margin-bottom: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        
+        /* စာအုပ်အမည်ပြသသည့် အမှတ်အသား (Badge) */
+        .book-badge {
+            font-size: 12px;
+            background-color: var(--alpha-bg);
+            color: var(--secondary-color);
+            padding: 3px 10px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            font-weight: normal;
+            white-space: nowrap;
+        }
+        
         .item-content { font-size: 15px; line-height: 1.8; color: var(--card-text); white-space: pre-line; transition: font-size 0.2s; }
         .no-result { text-align: center; color: #999; font-style: italic; padding: 20px; }
+        .count-text { text-align: center; font-size: 13px; color: #777; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>ပိဋကလမ်းညွှန်</h2>
+    <h2>မြန်မာပညာ (Universal Search)</h2>
 
+    <!-- Setting Bars (Font size and Themes) -->
     <div class="settings-bar">
         <button class="setting-btn" onclick="changeFontSize(-1)">A-</button>
         <button class="setting-btn" onclick="changeFontSize(1)">A+</button>
@@ -177,62 +184,52 @@
         </div>
     </div>
 
-    <div class="book-selector-container">
-        <select id="bookSelector" onchange="changeBook()">
-            <option value="vutthu">၁။ ပိဋကတ်ဝတ္ထုလမ်းညွှန် (၃ အုပ်)</option>
-            <option value="pitaka">၂။ ပိဋကလမ်းညွှန် (၇ အုပ်)</option>
-            <option value="thutethana">၃။ သုတေသနသရုပ်ပြအဘိဓာန် (၂ အုပ်)</option>
-        </select>
-    </div>
-
-    <div id="loadingStatus" class="loading-box" style="display: none;">
-        ဝီကီဆို့စ်မှ <span id="loadingBookName" style="font-weight:bold;"></span> ကို ဆွဲယူနေပါသည်...<br>
+    <!-- Loading Box -->
+    <div id="loadingStatus" class="loading-box">
+        စာအုပ်များအားလုံးကို စုစည်းနေပါသည်...<br>
         <span id="progressIndicator" class="progress-text">စနစ်ကို စတင်ပြင်ဆင်နေသည်...</span><br>
-        <span style="font-size: 13px; color: #777; display:block; margin-top:5px;">(ဒေတာပမာဏ ကြီးမားသဖြင့် ပထမဆုံးတစ်ကြိမ်သာ အချိန်အနည်းငယ် ကြာပါမည်)</span>
+        <span style="font-size: 13px; color: #777; display:block; margin-top:5px;">(စာအုပ် ၁၂ အုပ်စာဖြစ်၍ ပထမဆုံးတစ်ကြိမ်သာ အချိန်အနည်းငယ် ကြာပါမည်)</span>
         <div id="retryArea"></div>
     </div>
 
+    <!-- Main Content -->
     <div id="mainApp" class="main-app">
         <div class="search-container">
-            <input type="text" id="searchBox" placeholder="ဒီနေရာမှာ စာရိုက်ပြီး ရှာဖွေပါ..." oninput="searchData()">
-            <button class="update-btn" onclick="forceUpdateData()">စာအသစ်ပြန်ယူရန်</button>
+            <input type="text" id="searchBox" placeholder="ဝတ္ထု၊ အဘိဓာန်၊ လမ်းညွှန် အားလုံးထဲမှ ရှာရန်..." oninput="searchData()">
+            <button class="update-btn" onclick="forceUpdateData()">ပြန်လည်ဆွဲယူရန်</button>
         </div>
 
         <div class="alphabet-buttons" id="alphabetButtonsArea">
             <button class="abc-btn active" onclick="filterAlphabet('အားလုံး', this)">အားလုံး</button>
         </div>
 
+        <div id="resultCount" class="count-text"></div>
         <div id="result-container"></div>
     </div>
 </div>
 
 <script>
     // ==========================================
-    // UI Settings Logic (Font Size & Multiple Themes)
+    // 1. UI Settings Logic (Font Size & Themes)
     // ==========================================
-    let currentFontSize = localStorage.getItem("myanmar_reader_fontsize") ? parseInt(localStorage.getItem("myanmar_reader_fontsize")) : 15;
-    let currentTheme = localStorage.getItem("myanmar_reader_theme") || "light";
+    let currentFontSize = localStorage.getItem("mm_univ_fontsize") ? parseInt(localStorage.getItem("mm_univ_fontsize")) : 15;
+    let currentTheme = localStorage.getItem("mm_univ_theme") || "light";
 
     function applyUserSettings() {
-        // Theme Apply
-        document.body.className = ""; // Remove all classes
-        if (currentTheme !== "light") {
-            document.body.classList.add("theme-" + currentTheme);
-        }
+        document.body.className = ""; 
+        if (currentTheme !== "light") document.body.classList.add("theme-" + currentTheme);
 
-        // Active Circle Indicator
         document.querySelectorAll('.theme-circle').forEach(el => el.classList.remove('active'));
         const activeCircle = document.getElementById("theme-" + currentTheme);
         if(activeCircle) activeCircle.classList.add('active');
 
-        // Font Size Apply
         const contentElements = document.querySelectorAll('.item-content');
         contentElements.forEach(el => { el.style.fontSize = currentFontSize + "px"; });
     }
 
     function setTheme(themeName) {
         currentTheme = themeName;
-        localStorage.setItem("myanmar_reader_theme", currentTheme);
+        localStorage.setItem("mm_univ_theme", currentTheme);
         applyUserSettings();
     }
 
@@ -240,35 +237,31 @@
         currentFontSize += step;
         if (currentFontSize < 12) currentFontSize = 12; 
         if (currentFontSize > 28) currentFontSize = 28; 
-        localStorage.setItem("myanmar_reader_fontsize", currentFontSize);
+        localStorage.setItem("mm_univ_fontsize", currentFontSize);
         applyUserSettings();
     }
 
     // ==========================================
-    // Data Configuration
+    // 2. Data Configuration (စာအုပ်အားလုံးစာရင်း)
     // ==========================================
-    const booksConfig = {
-        "vutthu": {
-            title: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်",
-            pages: ["ပိဋကတ်ဝတ္ထုလမ်းညွှန်", "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-ဒု", "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-တ"],
-            vols: ["ပထမတွဲ (၁)", "ဒုတိယတွဲ (၂)", "တတိယတွဲ (၃)"]
-        },
-        "pitaka": {
-            title: "ပိဋကလမ်းညွှန်",
-            pages: [
-                "ပိဋကလမ်းညွှန်-ကခဂဃင", "ပိဋကလမ်းညွှန်-စဆဇဈည", "ပိဋကလမ်းညွှန်-ဋဌဍဎဏတထဒဓန", 
-                "ပိဋကလမ်းညွှန်-ပဖဗဘမ", "ပိဋကလမ်းညွှန်-ယရလဝ", "ပိဋကလမ်းညွှန်-သဟဠ", "ပိဋကလမ်းညွှန်-အ"
-            ],
-            vols: ["(က - င)", "(စ - ည)", "(ဋ - န)", "(ပ - မ)", "(ယ - ဝ)", "(သ - ဠ)", "(အ)"]
-        },
-        "thutethana": {
-            title: "သုတေသနသရုပ်ပြအဘိဓာန်",
-            pages: ["သုတေသနသရုပ်ပြအဘိဓာန်", "သုတေသနသရုပ်ပြအဘိဓာန်-ဒု"],
-            vols: ["ပထမတွဲ", "ဒုတိယတွဲ"]
-        }
-    };
+    const allBooksList = [
+        // ပိဋကတ်ဝတ္ထုလမ်းညွှန် (၃ အုပ်)
+        { source: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်", page: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်", vol: "ပထမတွဲ" },
+        { source: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်", page: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-ဒု", vol: "ဒုတိယတွဲ" },
+        { source: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်", page: "ပိဋကတ်ဝတ္ထုလမ်းညွှန်-တ", vol: "တတိယတွဲ" },
+        // ပိဋကလမ်းညွှန် (၇ အုပ်)
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-ကခဂဃင", vol: "(က-င)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-စဆဇဈည", vol: "(စ-ည)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-ဋဌဍဎဏတထဒဓန", vol: "(ဋ-န)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-ပဖဗဘမ", vol: "(ပ-မ)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-ယရလဝ", vol: "(ယ-ဝ)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-သဟဠ", vol: "(သ-ဠ)" },
+        { source: "ပိဋကလမ်းညွှန်", page: "ပိဋကလမ်းညွှန်-အ", vol: "(အ)" },
+        // သုတေသနသရုပ်ပြအဘိဓာန် (၂ အုပ်)
+        { source: "သုတေသနသရုပ်ပြအဘိဓာန်", page: "သုတေသနသရုပ်ပြအဘိဓာန်", vol: "ပထမတွဲ" },
+        { source: "သုတေသနသရုပ်ပြအဘိဓာန်", page: "သုတေသနသရုပ်ပြအဘိဓာန်-ဒု", vol: "ဒုတိယတွဲ" }
+    ];
 
-    let currentBookKey = "vutthu"; 
     let currentData = []; 
     let currentAlphabet = "အားလုံး";
 
@@ -279,10 +272,10 @@
     ];
 
     // ==========================================
-    // IndexedDB Database
+    // 3. IndexedDB Database
     // ==========================================
-    const DB_NAME = "MyanmarLibraryDB";
-    const STORE_NAME = "library_volumes";
+    const DB_NAME = "MyanmarUniversalDB"; // နာမည်အသစ်ပေးထားသည်
+    const STORE_NAME = "all_volumes";
 
     function initDB() {
         return new Promise((resolve, reject) => {
@@ -318,19 +311,19 @@
         });
     }
 
-    async function deleteFromDB(key) {
+    async function clearDB() {
         let db = await initDB();
         return new Promise((resolve, reject) => {
             let tx = db.transaction(STORE_NAME, "readwrite");
             let store = tx.objectStore(STORE_NAME);
-            let request = store.delete(key);
+            let request = store.clear();
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
     }
 
     // ==========================================
-    // Application Logic
+    // 4. Application Logic
     // ==========================================
     window.onload = function() {
         applyUserSettings(); 
@@ -344,25 +337,15 @@
             btnArea.appendChild(btn);
         });
         
-        loadSelectedBook();
+        loadAllBooks();
     };
 
-    function changeBook() {
-        currentBookKey = document.getElementById("bookSelector").value;
-        document.getElementById("searchBox").value = ""; 
-        filterAlphabet('အားလုံး', document.querySelector('.abc-btn')); 
-        loadSelectedBook();
-    }
-
-    async function loadSelectedBook() {
+    async function loadAllBooks() {
         currentData = [];
-        let bookInfo = booksConfig[currentBookKey];
         let missingVolumeFound = false;
 
-        document.getElementById("loadingBookName").textContent = bookInfo.title;
-
-        for (let i = 0; i < bookInfo.pages.length; i++) {
-            let savedVol = await getFromDB(`${currentBookKey}_vol_${i}`);
+        for (let i = 0; i < allBooksList.length; i++) {
+            let savedVol = await getFromDB(`univ_vol_${i}`);
             if (savedVol) {
                 currentData = currentData.concat(savedVol);
             } else {
@@ -373,47 +356,49 @@
         if (!missingVolumeFound && currentData.length > 0) {
             startApp();
         } else {
-            fetchMissingVolumes(bookInfo);
+            fetchMissingVolumes();
         }
     }
 
-    async function fetchMissingVolumes(bookInfo) {
+    async function fetchMissingVolumes() {
         document.getElementById("loadingStatus").style.display = "block";
         document.getElementById("mainApp").style.display = "none";
         document.getElementById("retryArea").innerHTML = ""; 
         
         const progressEl = document.getElementById("progressIndicator");
 
-        for (let i = 0; i < bookInfo.pages.length; i++) {
-            let isSaved = await getFromDB(`${currentBookKey}_vol_${i}`);
+        for (let i = 0; i < allBooksList.length; i++) {
+            let isSaved = await getFromDB(`univ_vol_${i}`);
             if (isSaved) continue; 
 
-            progressEl.textContent = `⏳ အတွဲ ${bookInfo.vols[i]} ကို ဒေါင်းလုဒ်ဆွဲနေပါသည်...`;
+            let item = allBooksList[i];
+            // စာအုပ်နာမည်နဲ့ အတွဲကို ပြပေးမည်
+            progressEl.textContent = `⏳ [${i+1}/${allBooksList.length}] ${item.source} ${item.vol} ကို ဒေါင်းလုဒ်ဆွဲနေပါသည်...`;
             
             try {
-                const apiUrl = `https://my.wikisource.org/w/api.php?action=parse&page=${encodeURIComponent(bookInfo.pages[i])}&format=json&origin=*`;
+                const apiUrl = `https://my.wikisource.org/w/api.php?action=parse&page=${encodeURIComponent(item.page)}&format=json&origin=*`;
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error("Network error");
                 
                 const data = await response.json();
                 
                 if (data && data.parse && data.parse.text) {
-                    let extractedData = parseVolumeData(data.parse.text["*"], bookInfo.title);
+                    let extractedData = parseVolumeData(data.parse.text["*"], item.source);
                     if (extractedData.length > 0) {
-                        await saveToDB(`${currentBookKey}_vol_${i}`, extractedData);
+                        await saveToDB(`univ_vol_${i}`, extractedData);
                     }
                 }
             } catch (error) {
                 console.error("Error at volume " + i, error);
-                progressEl.innerHTML = `<span style='color:red;'>❌ ${bookInfo.vols[i]} ဆွဲယူရာတွင် အခက်အခဲရှိနေပါသည်။</span>`;
-                document.getElementById("retryArea").innerHTML = `<button class="retry-btn" onclick="loadSelectedBook()">ထပ်မံကြိုးစားရန်</button>`;
+                progressEl.innerHTML = `<span style='color:red;'>❌ ${item.source} ဆွဲယူရာတွင် အခက်အခဲရှိနေပါသည်။</span>`;
+                document.getElementById("retryArea").innerHTML = `<button class="retry-btn" onclick="loadAllBooks()">ထပ်မံကြိုးစားရန်</button>`;
                 return; 
             }
         }
-        loadSelectedBook(); 
+        loadAllBooks(); 
     }
 
-    function parseVolumeData(htmlContent, bookTitle) {
+    function parseVolumeData(htmlContent, sourceBookName) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, 'text/html');
         const headings = doc.querySelectorAll('h2, h3, h4');
@@ -421,7 +406,7 @@
 
         headings.forEach(heading => {
             const title = heading.textContent.trim();
-            if (!title || title.includes("ဆရာတော်") || title.includes("စာမျက်နှာ") || title.includes("ကဏ္ဍ") || title.includes(bookTitle)) return;
+            if (!title || title.includes("ဆရာတော်") || title.includes("စာမျက်နှာ") || title.includes("ကဏ္ဍ") || title.includes(sourceBookName)) return;
 
             let currentEl = heading;
             if (heading.parentElement && heading.parentElement.classList.contains('mw-heading')) {
@@ -444,7 +429,8 @@
             parsedList.push({
                 "alphabet": firstChar,
                 "title": title,
-                "content": content.trim()
+                "content": content.trim(),
+                "bookName": sourceBookName // စာအုပ်အမည်ကို မှတ်သားထားမည်
             });
         });
         return parsedList;
@@ -458,7 +444,10 @@
 
     function displayData(dataList) {
         const container = document.getElementById("result-container");
+        const countDisplay = document.getElementById("resultCount");
         container.innerHTML = ""; 
+
+        countDisplay.textContent = `စုစုပေါင်း အချက်အလက် ( ${dataList.length} ) ခု တွေ့ရှိပါသည်။`;
 
         if (dataList.length === 0) {
             container.innerHTML = "<div class='no-result'>ရှာဖွေမှုရလဒ် မရှိပါ။</div>";
@@ -468,7 +457,14 @@
         dataList.forEach(item => {
             const card = document.createElement("div");
             card.className = "item-card";
-            card.innerHTML = `<div class="item-title">${item.title}</div><div class="item-content">${item.content}</div>`;
+            // ခေါင်းစဉ်ဘေးတွင် စာအုပ်အမည်ကို Badge အနေဖြင့် ပြသမည်
+            card.innerHTML = `
+                <div class="item-title">
+                    ${item.title} 
+                    <span class="book-badge">${item.bookName}</span>
+                </div>
+                <div class="item-content">${item.content}</div>
+            `;
             container.appendChild(card);
         });
         
@@ -501,12 +497,9 @@
     }
 
     async function forceUpdateData() {
-        let bookInfo = booksConfig[currentBookKey];
-        if(confirm(`"${bookInfo.title}" ရဲ့ အချက်အလက်အသစ်များကို ပြန်ဒေါင်းလုဒ် ဆွဲမလား?`)) {
-            for (let i = 0; i < bookInfo.pages.length; i++) {
-                await deleteFromDB(`${currentBookKey}_vol_${i}`);
-            }
-            loadSelectedBook();
+        if(confirm("စာအုပ် ၁၂ အုပ်လုံးကို အစကနေ ပြန်လည်ဒေါင်းလုဒ် ဆွဲမလား? (အချိန်အနည်းငယ် ကြာနိုင်ပါသည်)")) {
+            await clearDB();
+            loadAllBooks();
         }
     }
 </script>
